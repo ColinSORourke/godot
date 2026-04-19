@@ -893,6 +893,10 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 			// render standard mono camera
 			_draw_viewport(vp);
 
+			// Update atlas textures using this viewport
+			RID viewport_texture = viewport_get_texture(vp->self);
+			RSG::texture_storage->decal_atlas_mark_draw_on_texture(viewport_texture);
+
 			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such
 				BlitToScreen blit;

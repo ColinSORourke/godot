@@ -2555,6 +2555,9 @@ void TextureStorage::decal_set_fade(RID p_decal, float p_above, float p_below) {
 void TextureStorage::decal_set_normal_fade(RID p_decal, float p_fade) {
 }
 
+void TextureStorage::decal_atlas_mark_draw_on_texture(RID p_texture) {
+}
+
 AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	return AABB();
 }

@@ -52,8 +52,7 @@ void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
 					p_texture->is_class("CameraTexture") ||
 					p_texture->is_class("CanvasTexture") ||
 					p_texture->is_class("MeshTexture") ||
-					p_texture->is_class("Texture2DRD") ||
-					p_texture->is_class("ViewportTexture"))) {
+					p_texture->is_class("Texture2DRD"))) {
 		WARN_PRINT(vformat("%s cannot be used as a Decal texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
 	}
 #endif
@@ -236,7 +235,7 @@ void Decal::_bind_methods() {
 
 	ADD_GROUP("Textures", "texture_");
 	// Only allow texture types that display correctly.
-	const String texture_hint = "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture";
+	const String texture_hint = "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD";
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_ALBEDO);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_NORMAL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_orm", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_ORM);

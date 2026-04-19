@@ -258,6 +258,7 @@ private:
 			int users;
 			Rect2 uv_rect;
 			bool drawn = false;
+			Size2i pixel_size;
 		};
 
 		struct SortItem {
@@ -667,12 +668,14 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override;
 
 	void decal_atlas_mark_dirty_on_texture(RID p_texture);
-	void decal_atlas_mark_draw_on_texture(RID p_texture);
+	virtual void decal_atlas_mark_draw_on_texture(RID p_texture) override;
 	void decal_atlas_remove_texture(RID p_texture);
 	void decal_atlas_redraw_textures();
 
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override;
+
+	void decal_mark_as_used(RID p_decal);
 
 	_FORCE_INLINE_ Vector3 decal_get_size(RID p_decal) {
 		const Decal *decal = decal_owner.get_or_null(p_decal);

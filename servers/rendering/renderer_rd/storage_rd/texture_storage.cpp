@@ -3377,6 +3377,30 @@ void TextureStorage::decal_atlas_mark_draw_on_texture(RID p_texture) {
 		return; //Don't mess with it while it's dirty anyway
 	}
 
+	Texture *texture = get_texture(p_texture);
+	if (!texture) {
+		return;
+	}
+
+	// Handle proxies
+	if (!texture->proxies.is_empty()) {
+		for (RID proxy: texture->proxies) {
+			if (decal_atlas.textures.has(proxy)) {
+				//belongs to decal_atlas
+				DecalAtlas::Texture *t = decal_atlas.textures.getptr(proxy);
+				if (texture->width != t->pixel_size.width || texture->height != t->pixel_size.height) {
+					decal_atlas.dirty = true;
+					return;
+				}
+
+				t->drawn = true;
+
+				decal_atlas.draw_dirty = true;
+			}
+		}
+		return;
+	}
+
 	if (decal_atlas.textures.has(p_texture)) {
 		//belongs to decal_atlas
 		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
@@ -3419,6 +3443,10 @@ void TextureStorage::decal_atlas_redraw_textures() {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					if (t->drawn) {
 						Texture *src_tex = get_texture(E.key);
+						if (src_tex->is_proxy) {
+							src_tex = get_texture(src_tex->proxy_to);
+						}
+
 						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
 						t->drawn = false;
 					}
@@ -3568,11 +3596,14 @@ void TextureStorage::update_decal_atlas() {
 
 		for (int i = 0; i < item_count; i++) {
 			DecalAtlas::Texture *t = decal_atlas.textures.getptr(items[i].texture);
-			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
-			t->uv_rect.size = items[i].pixel_size;
+			t->pixel_size = items[i].pixel_size;
 
+			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
 			t->uv_rect.position /= Size2(decal_atlas.size);
-			t->uv_rect.size /= Size2(decal_atlas.size);
+
+			t->uv_rect.size = Size2(t->pixel_size) / Size2(decal_atlas.size);
+
+			
 		}
 	} else {
 		//use border as size, so it at least has enough mipmaps
@@ -3634,7 +3665,12 @@ void TextureStorage::update_decal_atlas() {
 
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
+
 					Texture *src_tex = get_texture(E.key);
+					if (src_tex->is_proxy) {
+						src_tex = get_texture(src_tex->proxy_to);
+					}
+
 					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
 					t->drawn = false;
 				}
@@ -3679,6 +3715,19 @@ void TextureStorage::texture_remove_from_decal_atlas(RID p_texture, bool p_panor
 	if (t->users == 0) {
 		decal_atlas.textures.erase(p_texture);
 		//do not mark it dirty, there is no need to since it remains working
+	}
+}
+
+void TextureStorage::decal_mark_as_used(RID p_decal) {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_NULL(decal);
+
+	for (uint32_t i = 0; i < RS::DECAL_TEXTURE_MAX; ++i) {
+		RID texture_rid = decal->textures[i];
+		if (!texture_rid.is_valid()) continue;
+
+		Texture *texture = get_texture(texture_rid);
+		if (texture->render_target) texture->render_target->was_used = true;
 	}
 }
 
@@ -3772,6 +3821,8 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 				}
 			}
 		}
+
+		decal_mark_as_used(decal_instance->decal);
 
 		decal_sort[decal_count].decal_instance = decal_instance;
 		decal_sort[decal_count].decal = decal;
