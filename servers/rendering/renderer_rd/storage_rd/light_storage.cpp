@@ -928,6 +928,10 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		if (projector.is_valid()) {
 			Rect2 rect = texture_storage->decal_atlas_get_texture_rect(projector);
 
+			// Mark projector as used
+			TextureStorage::Texture *projector_texture = texture_storage->get_texture(projector);
+			if (projector_texture->render_target) projector_texture->render_target->was_used = true;
+
 			if (type == RS::LIGHT_SPOT) {
 				light_data.projector_rect[0] = rect.position.x;
 				light_data.projector_rect[1] = rect.position.y + rect.size.height; //flip because shadow is flipped

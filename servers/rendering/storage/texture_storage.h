@@ -129,6 +129,8 @@ public:
 	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) = 0;
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
 
+	virtual void decal_atlas_mark_draw_on_texture(RID p_texture) = 0;
+
 	virtual AABB decal_get_aabb(RID p_decal) const = 0;
 	virtual uint32_t decal_get_cull_mask(RID p_decal) const = 0;
 

@@ -152,6 +152,8 @@ public:
 	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) override {}
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) override {}
 
+	virtual void decal_atlas_mark_draw_on_texture(RID p_texture) override {};
+
 	virtual AABB decal_get_aabb(RID p_decal) const override { return AABB(); }
 	virtual uint32_t decal_get_cull_mask(RID p_decal) const override { return 0; }
 
